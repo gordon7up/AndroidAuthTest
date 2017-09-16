@@ -12,6 +12,8 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.Call;
@@ -29,7 +31,9 @@ public interface ApiService {
             @Field("mobile") String mobile,
             @Field("password") String pass);
 
-//    @GET("markets/")
-//    Call<List<Market>> getMarkets();
+
+    //This is a authorised test - token is required - note the missing auth headers :)
+    @GET("users/test")
+    Call<ResponseBody> getTest();
 
 }

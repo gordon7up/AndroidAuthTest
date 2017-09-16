@@ -23,9 +23,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private EditText mUsername;
-    private EditText mPassword;
-    private Button mBtnLogin, mBtnTestApi;
+    private EditText mFirstName, mSurname, mPassword, mMobile, mEmail;
+    private Button mRegister, mBtnTestApi, mbtnClear;
     public static Context appContext;
 
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -49,15 +48,33 @@ public class MainActivity extends AppCompatActivity {
      * Register the simple UI elements
      */
     private void setupUi(){
-        mUsername = (EditText) findViewById(R.id.et_username);
+        mFirstName = (EditText) findViewById(R.id.et_first_name);
+        mSurname = (EditText)findViewById(R.id.et_last_name);
+        mEmail = (EditText)findViewById(R.id.et_email);
+        mMobile = (EditText)findViewById(R.id.et_mobile);
         mPassword = (EditText) findViewById(R.id.et_password);
-        mBtnLogin = (Button)findViewById(R.id.btn_login);
+        mRegister = (Button)findViewById(R.id.btn_register);
         mBtnTestApi = (Button)findViewById(R.id.btn_test);
+        mbtnClear = (Button)findViewById(R.id.btn_clear);
 
-        mBtnLogin.setOnClickListener(new View.OnClickListener() {
+        mRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 login();
+            }
+        });
+
+        mBtnTestApi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                testApi();
+            }
+        });
+
+        mbtnClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clearPrefToken();
             }
         });
     }
@@ -74,15 +91,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void login(){
-        String user = getInput(mUsername);
+        String firstName = getInput(mFirstName);
+        String lastName = getInput(mSurname);
+        String email = getInput(mEmail);
+        String mobile = getInput(mMobile);
         String pass = getInput(mPassword);
 
-        api.addUser(user, "tester", "tester7@testy.com", "0878923234", pass).enqueue(userCreateCallback);
-        //login to api via retrofit.
+        api.addUser(firstName, lastName, email, mobile, pass).enqueue(userCreateCallback);
+    }
+
+    private void testApi(){
+        api.getTest().enqueue(authTestCallback);
+    }
+
+    private void clearPrefToken(){
+        Utilities.saveToken("", appContext);
     }
 
     /**
-     * Retrofit 2 callback handling the getMarkets request.
+     * Retrofit 2 callback handling new user, if successful a auth token is
+     * returned.
      */
     private Callback<ResponseBody> userCreateCallback = new Callback<ResponseBody>() {
         @Override
@@ -92,8 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     JSONObject jObj = new JSONObject(response.body().string());
-                    Utilities.saveToken(jObj.getString("token"), appContext);
-                    Toast.makeText(appContext, jObj.getString("token"), Toast.LENGTH_LONG).show();
+                    Utilities.saveToken("token " + jObj.getString("token"), appContext);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -104,6 +131,28 @@ public class MainActivity extends AppCompatActivity {
             else{
                 Log.d(TAG, "User Callback: " + response.code() + " Message:" + response.message());
                 Log.d(TAG, "CALL: " + call.request().url());
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ResponseBody> call, Throwable t) {
+            Log.d(TAG, "CALLBACK FAIL:");
+            t.printStackTrace();
+        }
+    };
+
+
+    private Callback<ResponseBody> authTestCallback = new Callback<ResponseBody>() {
+        @Override
+        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            if(response.isSuccessful()){
+                Toast.makeText(appContext, "Successfully hit API!!", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(appContext, "Not authorised or error!", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "User Callback: " + response.code() + " Message:" + response.message());
+                Log.d(TAG, "Headers " + call.request().headers());
+
             }
         }
 

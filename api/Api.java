@@ -1,6 +1,7 @@
 package com.haptix.authtest.api;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -11,6 +12,7 @@ import java.io.IOException;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -23,6 +25,7 @@ import okhttp3.Interceptor;
  */
 
 public class Api {
+    public static final String TAG = Api.class.getSimpleName();
     private static Api instance = null;
     ApiService apiService;
     OkHttpClient defaultHttpClient;
@@ -66,7 +69,9 @@ public class Api {
                         }
                         Request authorisedRequest = chain.request().newBuilder()
                                 .addHeader("Authorization", Utilities.getToken(MainActivity.appContext)).build();
-                        //PrintLog.error("retrofit 2","Authorization header is added to the url....");
+                        Log.d(TAG, "API:   Authorization header is added to the url....");
+                        Log.d(TAG, "okhttp headers: " + String.valueOf(authorisedRequest.headers()));
+
                         return chain.proceed(authorisedRequest);
                     }}).build();
 
